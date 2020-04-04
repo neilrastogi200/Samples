@@ -3,14 +3,14 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.705
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sonovate.CodeTest", "Sonovate.CodeTest.csproj", "{45F21003-D34B-430D-A02A-2EAC5A231B8D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sonovate.CodeTest", "Sonovate.CodeTest\Sonovate.CodeTest.csproj", "{45F21003-D34B-430D-A02A-2EAC5A231B8D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A3FA7C45-9AC8-4AD9-95CA-D1AAF75C7ED7}"
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sonovate.Tests", "..\Sonovate.Tests\Sonovate.Tests.csproj", "{7D8FFFB1-F03E-46CE-B9E8-4829E7002E5C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sonovate.Tests", "Sonovate.Tests\Sonovate.Tests.csproj", "{7D8FFFB1-F03E-46CE-B9E8-4829E7002E5C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

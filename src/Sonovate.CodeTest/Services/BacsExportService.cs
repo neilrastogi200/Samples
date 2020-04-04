@@ -54,8 +54,8 @@ namespace Sonovate.CodeTest.Services
             }
 
             var payments = await service.GetPayments(startDate, endDate);
-            var fileName = GetFilename(bacsExportType);
-            _csvWriterWrapper.WriteRecords(payments,fileName);
+            var filename = GetFilename(bacsExportType);
+            _csvWriterWrapper.WriteRecords(payments,filename);
         }
 
         public static string GetFilename(BacsExportType type)
