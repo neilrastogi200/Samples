@@ -79,7 +79,7 @@ namespace Sonovate.Tests
             //Act
             await _bacsExportService.ExportZip(bacsExportType);
 
-            //Verify
+            //Assert/Verify
             _testDataBuilder.VerifyCsvRecords<BacsResult>(bacsExportType, x =>
             {
                 var record = Assert.Single(x);
@@ -108,7 +108,7 @@ namespace Sonovate.Tests
      
             await _bacsExportService.ExportZip(bacsExportType);
 
-            //Verify
+            //Assert/Verify
             _testDataBuilder.VerifyCsvRecords<SupplierBacs>(BacsExportType.Supplier, record =>
             {
                 Assert.Equal(expectedResult[0].SortCode, record[0].SortCode);
@@ -189,7 +189,7 @@ namespace Sonovate.Tests
                 //Act
                 await _bacsExportService.ExportZip(BacsExportType.Supplier);
 
-            //Verify   
+            //Assert/Verify   
             _testDataBuilder.VerifyCsvRecords<SupplierBacs>(BacsExportType.Supplier, record =>
             {
                 Assert.Equal(expectedResult[0].SortCode, record[0].SortCode);
@@ -224,7 +224,7 @@ namespace Sonovate.Tests
             //Act
             await _bacsExportService.ExportZip(bacsExportType);
 
-            //Verify
+            //AssertVerify
             _testDataBuilder.VerifyCsvRecords<BacsResult>(bacsExportType, record =>
                 {
                     record.Should().BeEquivalentTo(expectedResult);
