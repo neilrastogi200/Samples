@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Raven.Client.Documents;
 using Sonovate.CodeTest.Domain;
@@ -12,9 +10,10 @@ namespace Sonovate.CodeTest.Repositories
     {
         private readonly IDocumentStore _documentStore;
 
-        public AgencyRepository(IDocumentStore documentStore)
+        public AgencyRepository()
         {
-            _documentStore = documentStore ?? throw new ArgumentNullException(nameof(documentStore));
+            _documentStore = new DocumentStore {Urls = new[]{"http://localhost"}, Database = "Export"};
+            _documentStore.Initialize();
         }
 
         public async Task<List<Agency>> GetAgenciesForPayments(IEnumerable<string> agencyIds)

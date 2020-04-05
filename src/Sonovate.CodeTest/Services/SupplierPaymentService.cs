@@ -90,27 +90,7 @@ namespace Sonovate.CodeTest.Services
 
                 results.Add(result);
             }
-
-            //I had a go at changing this from the above to the below, is that roughly right?
-
-            //I had  a look at the select  n + 1 problem, I see the problem with this if you had large oamounts of N it would be a big hit on the db. I did think it would be easier to get all the candidate data out in one hit a new method, but I think reading the instructions, I am not allowed to do that. Also it makes more difficult to unit test. 
-
-            //var result = (from transaction in transactionsByCandidateAndInvoiceId
-            //    let candidate = _candidateRepository.GetById(transaction.Key.SupplierId)
-            //    where candidate != null
-            //    select new SupplierBacs()
-            //    {
-            //        PaymentAmount = transaction.Sum(invoiceTransaction => invoiceTransaction.Gross),
-            //        InvoiceReference = string.IsNullOrEmpty(transaction.First().InvoiceRef)
-            //            ? NotAvailable
-            //            : transaction.First().InvoiceRef,
-            //        PaymentReference = $"SONOVATE{transaction.First().InvoiceDate.GetValueOrDefault():ddMMyyyy}",
-            //        AccountName = candidate.BankDetails.AccountName,
-            //        AccountNumber = candidate.BankDetails.AccountNumber,
-            //        SortCode = candidate.BankDetails.SortCode
-
-            //    });
-           
+            
             return results;
         }
     }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using FluentAssertions;
 using Sonovate.CodeTest.Domain;
 using Sonovate.CodeTest.Repositories;
@@ -10,7 +9,7 @@ namespace Sonovate.Tests
 {
     public class InvoiceTransactionRepositoryTests
     {
-        private IInvoiceTransactionRepository _invoiceTransactionRepository;
+        private readonly IInvoiceTransactionRepository _invoiceTransactionRepository;
 
         public InvoiceTransactionRepositoryTests()
         {

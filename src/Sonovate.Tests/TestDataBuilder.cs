@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Moq;
 using Sonovate.CodeTest.Domain;
 using Sonovate.CodeTest.Services;
@@ -14,17 +13,7 @@ namespace Sonovate.Tests
     {
         private string _filenameResult;
         private IEnumerable _recordsResult;
-        public TestDataBuilder()
-        {
-            //var csvWriter = GetMockedCsvWriterWrapper();
-            //csvWriter.Setup(x => x.WriteRecords(It.IsAny<IEnumerable>(), It.IsAny<string>()))
-            //    .Callback<IEnumerable, string>((x, y) =>
-            //    {
-            //        recordsResult = x;
-            //        filenameResult = y;
-            //    });
-        }
-
+      
         public void VerifyCsvRecords<T>(BacsExportType bacsExportType, Action<T[]> verify)
         {
             var filename = BacsExportService.GetFilename(bacsExportType);
@@ -49,9 +38,19 @@ namespace Sonovate.Tests
         {
             var agencyList = new List<Agency>()
             {
+                new Agency(){Id = "Agency 1",BankDetails = new BankDetails(){AccountNumber = "0123457", AccountName = "testAccount",SortCode = "401314"}}
+            };
+
+            return agencyList;
+        }
+
+        public List<Agency> AddMultipleAgencies()
+        {
+            var agencyList = new List<Agency>()
+            {
                 new Agency(){Id = "Agency 1",BankDetails = new BankDetails(){AccountNumber = "0123457", AccountName = "testAccount",SortCode = "401314"}},
 
-                //new Agency(){Id = "Agency 2",BankDetails = new BankDetails(){AccountNumber = "0123489", AccountName = "testAccount2",SortCode = "401344"}}
+                new Agency(){Id = "Agency 2",BankDetails = new BankDetails(){AccountNumber = "0123489", AccountName = "testAccount2",SortCode = "401344"}}
             };
 
             return agencyList;
@@ -62,7 +61,17 @@ namespace Sonovate.Tests
             var paymentData = new List<Payment>()
             {
                 new Payment { AgencyId = "Agency 1", Balance = 20000.00m, PaymentDate = new DateTime(2019, 9, 01)},
-                //new Payment { AgencyId = "Agency 2", Balance = 20000.00m, PaymentDate = new DateTime(2019, 9, 11)}
+            };
+
+            return paymentData;
+        }
+
+        public List<Payment> AddMultiplePayment()
+        {
+            var paymentData = new List<Payment>()
+            {
+                new Payment { AgencyId = "Agency 1", Balance = 20000.00m, PaymentDate = new DateTime(2019, 9, 01)},
+                new Payment { AgencyId = "Agency 2", Balance = 20000.00m, PaymentDate = new DateTime(2019, 9, 11)}
             };
 
             return paymentData;
@@ -81,6 +90,35 @@ namespace Sonovate.Tests
                     AccountNumber = "0123457",
                     Amount = 20000.00m,
                     Ref = $"SONOVATE{paymentDate:ddMMyyyy}"
+                }
+            };
+
+            return expectedResult;
+        }
+
+        public IEnumerable<BacsResult> AddMultipleAgencyResult()
+        {
+            DateTime paymentDate = new DateTime(2019, 9, 01);
+            DateTime paymentDate1 = new DateTime(2019,9,11);
+
+            IEnumerable<BacsResult> expectedResult = new List<BacsResult>()
+            {
+                new BacsResult()
+                {
+                    AccountName = "testAccount",
+                    SortCode = "401314",
+                    AccountNumber = "0123457",
+                    Amount = 20000.00m,
+                    Ref = $"SONOVATE{paymentDate:ddMMyyyy}"
+                },
+
+                new BacsResult()
+                {
+                    AccountName = "testAccount2",
+                    SortCode = "401344",
+                    AccountNumber = "0123489",
+                    Amount = 20000.00m,
+                    Ref = $"SONOVATE{paymentDate1:ddMMyyyy}"
                 }
             };
 

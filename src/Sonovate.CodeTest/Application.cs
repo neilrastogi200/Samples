@@ -11,7 +11,7 @@ namespace Sonovate.CodeTest
         {
             var builder = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>
             {
-                { "EnableAgencyPayments", "rrrr" }
+                { "EnableAgencyPayments", "True" }
             });
 
             Settings = builder.Build();

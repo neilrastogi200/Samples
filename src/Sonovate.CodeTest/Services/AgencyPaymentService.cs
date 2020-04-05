@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Sonovate.CodeTest.Domain;
 using Sonovate.CodeTest.Repositories;
@@ -24,13 +23,8 @@ namespace Sonovate.CodeTest.Services
 
         public bool ArePaymentsEnabled()
         {
-            if (_applicationWrapper["EnableAgencyPayments"]
-                .Equals("true", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return true;
-            }
-
-            return false;
+            return _applicationWrapper["EnableAgencyPayments"]
+                .Equals("true", StringComparison.InvariantCultureIgnoreCase);
         }
 
         public async Task<IEnumerable> GetPayments(DateTime startDate, DateTime endDate)

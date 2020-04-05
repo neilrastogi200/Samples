@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Sonovate.CodeTest.Domain
+﻿namespace Sonovate.CodeTest.Domain
 {
     internal class Candidate
     {
