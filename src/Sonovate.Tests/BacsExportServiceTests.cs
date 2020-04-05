@@ -4,8 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using AutoFixture;
 using AutoFixture.AutoMoq;
 using FluentAssertions;
+using FluentAssertions.Collections;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using Raven.Client.Documents;
@@ -31,16 +33,17 @@ namespace Sonovate.Tests
         private Mock<IPaymentService> _mockPaymentService;
         private Mock<IPaymentServiceFactory> _mockPaymentServiceFactory;
         private Mock<ICsvWriterWrapper> _mockWriterWrapper;
-        private Mock<CodeTest.Services.IApplicationWrapper> _mockApplicationWrapper;
+        private Mock<IApplicationWrapper> _mockApplicationWrapper;
 
-        private IPaymentServiceFactory _paymentServiceFactory;
-        private IPaymentService _paymentService;
-        private TestDataBuilder _testDataBuilder = null;
+        private readonly IPaymentServiceFactory _paymentServiceFactory;
+        
+        private readonly TestDataBuilder _testDataBuilder;
+
+        private IFixture _fixture;
 
 
         public BacsExportServiceTests()
-        {
-           // _mockWriterWrapper = new Mock<ICsvWriterWrapper>();
+        {  
             _mockPaymentServiceFactory = new Mock<IPaymentServiceFactory>();
             _mockPaymentsRepository = new Mock<IPaymentsRepository>();
             _mockAgencyRepository = new Mock<IAgencyRepository>();
@@ -50,14 +53,12 @@ namespace Sonovate.Tests
             _mockPaymentService = new Mock<IPaymentService>();
             _mockApplicationWrapper = new Mock<IApplicationWrapper>();
 
+            _fixture = new Fixture().Customize(new AutoMoqCustomization());
+
             _testDataBuilder = new TestDataBuilder();
             _mockWriterWrapper = _testDataBuilder.GetMockedCsvWriterWrapper();
 
-           
-
             _paymentServiceFactory = new PaymentServiceFactory(_mockPaymentsRepository.Object, _mockInvoiceTransactionRepository.Object, _mockAgencyRepository.Object, _mockCandidateRepository.Object, _mockApplicationWrapper.Object);
-
-            //_bacsExportService = new BacsExportService(_paymentServiceFactory,_mockDateTimeService.Object, _mockWriterWrapper.Object);
 
             _bacsExportService = new BacsExportService(_paymentServiceFactory,_mockDateTimeService.Object, _mockWriterWrapper.Object);
         }
@@ -79,32 +80,11 @@ namespace Sonovate.Tests
             var bacsExportType = BacsExportType.Agency;
             DateTime startDate = new DateTime(2019, 04, 05);
             DateTime endDateTime = DateTime.Now;
-            DateTime paymentDate = new DateTime(2019, 9, 01);
-            var fileName = "Agency_BACSExport.csv";
-
+       
             var agencyIds = new[] {"Agency 1"};
- 
-            List<Agency> agencyList = new List<Agency>()
-            {
-                new Agency(){Id = "Agency 1",BankDetails = new BankDetails(){AccountNumber = "0123457", AccountName = "testAccount",SortCode = "401314"}}
-            };
-
-            IEnumerable<BacsResult> expectedResult = new List<BacsResult>()
-            {
-                new BacsResult()
-                {
-                    AccountName = "testAccount",
-                    SortCode = "401314",
-                    AccountNumber = "0123457",
-                    Amount = 20000.00m,
-                    Ref = $"SONOVATE{paymentDate:ddMMyyyy}"
-                }
-            };
-
-            List<Payment> paymentData = new List<Payment>()
-            {
-                new Payment { AgencyId = "Agency 1", Balance = 20000.00m, PaymentDate = new DateTime(2019, 9, 01)},
-            };
+            var agencyList = _testDataBuilder.AddSingleAgency();
+            var paymentData = _testDataBuilder.AddSinglePayment();
+            var expectedResult = _testDataBuilder.AddSingleAgencyResult();
 
             _mockPaymentsRepository.Setup(x => x.GetBetweenDates(startDate, endDateTime)).Returns(paymentData);
 
@@ -118,15 +98,19 @@ namespace Sonovate.Tests
        
             _paymentServiceFactory.GetPaymentTypeService(bacsExportType);
 
-            _mockWriterWrapper.Setup(x => x.WriteRecords(expectedResult,fileName)).Verifiable();
-
             //Act
             await _bacsExportService.ExportZip(bacsExportType);
 
             //Verify
-            _mockWriterWrapper.Verify(x => x.WriteRecords(It.Is<IEnumerable<BacsResult>>( y => y.Any() && y.Count() == 1),fileName),Times.Once);
-
-            _mockWriterWrapper.Verify(x => x.WriteRecords(It.Is<IEnumerable<BacsResult>>( y => y.ToList()[0].AccountName=="testAccount" && y.ToList()[0].Ref==$"SONOVATE{paymentDate:ddMMyyyy}"),fileName),Times.Once);
+            _testDataBuilder.VerifyCsvRecords<BacsResult>(bacsExportType, x =>
+            {
+                var record = Assert.Single(x);
+                Assert.Equal(expectedResult.ToList()[0].SortCode, record.SortCode);
+                Assert.Equal(expectedResult.ToList()[0].AccountName, record.AccountName);
+                Assert.Equal(expectedResult.ToList()[0].AccountNumber, record.AccountNumber);
+                Assert.Equal(expectedResult.ToList()[0].Ref, record.Ref);
+                Assert.Equal(expectedResult.ToList()[0].Amount, record.Amount);
+            });
         }
 
         [Fact]
@@ -136,40 +120,10 @@ namespace Sonovate.Tests
             var bacsExportType = BacsExportType.Supplier;
             DateTime startDate = new DateTime(2019, 04, 05);
             DateTime endDateTime = DateTime.Now;
-            var fileName = "Supplier_BACSExport.csv";
 
-            var candidateData = new Dictionary<string, Candidate>()
-            {
-                {
-                    "Supplier 1", new Candidate()
-                    {
-                        BankDetails = new BankDetails
-                        {
-                            AccountName = "Account 1",
-                            AccountNumber = "00000001",
-                            SortCode = "00-00-01"
-                        }
-                    }
-                }
-            };
-            
-            var invoiceData = new List<InvoiceTransaction>()
-            {
-                new InvoiceTransaction { InvoiceDate = new DateTime(2019, 4, 26), InvoiceId = "0001", SupplierId = "Supplier 1", InvoiceRef = "Ref0001", Gross = 10000.00m},
-            };
-
-            var expectedResult = new List<SupplierBacs>()
-            {
-                new SupplierBacs()
-                {
-                    AccountName = "Account 1",
-                    AccountNumber = "00000001",
-                    InvoiceReference = "Ref0001",
-                    PaymentAmount = 10000.00m,
-                    PaymentReference = "SONOVATE26042019",
-                    SortCode = "00-00-01",
-                }
-            };
+            var candidateData = _testDataBuilder.AddSingleCandidateData();
+            var invoiceData = _testDataBuilder.AddSingleInvoiceTransaction();
+            var expectedResult = _testDataBuilder.AddSingleSupplierResult();
 
             _mockDateTimeService.Setup(x => x.GetStartDateTime()).Returns(startDate);
 
@@ -183,16 +137,17 @@ namespace Sonovate.Tests
             _mockPaymentService.Setup(x => x.ArePaymentsEnabled()).Returns(true);
 
              _paymentServiceFactory.GetPaymentTypeService(bacsExportType);
-
-            _mockWriterWrapper.Setup(x => x.WriteRecords(expectedResult, fileName));
-                
+     
             await _bacsExportService.ExportZip(bacsExportType);
 
             //Verify
-            _mockWriterWrapper.Verify(x => x.WriteRecords(It.Is<IEnumerable<SupplierBacs>>( y => y.Any() && y.Count() == 1),fileName),Times.Once);
-
-            _mockWriterWrapper.Verify(x => x.WriteRecords(It.Is<IEnumerable<SupplierBacs>>( y => y.ToList()[0].AccountName=="Account 1" && y.ToList()[0].PaymentReference=="SONOVATE26042019"),fileName),Times.Once);
-
+            _testDataBuilder.VerifyCsvRecords<SupplierBacs>(BacsExportType.Supplier, x =>
+            {
+                Assert.Equal(expectedResult[0].SortCode, x[0].SortCode);
+                Assert.Equal(expectedResult[0].AccountName,x[0].AccountName);
+                Assert.Equal(expectedResult[0].InvoiceReference,x[0].InvoiceReference);
+                Assert.Equal(expectedResult[0].AccountName,x[0].AccountName);
+            });
         }
 
         [Fact]
@@ -280,104 +235,38 @@ namespace Sonovate.Tests
             //Arrange
             DateTime startDate = new DateTime(2019, 04, 05);
             DateTime endDateTime = DateTime.Now;
-            var filename = "Supplier_BACSExport.csv";
 
-            var testInvoiceData = new List<InvoiceTransaction>()
-            {
-                new InvoiceTransaction
-                {
-                    InvoiceDate = new DateTime(2019, 4, 26),
-                    InvoiceId = "0001",
-                    SupplierId = "Supplier 1",
-                    InvoiceRef = "Ref0001",
-                    Gross = 10000.00m
-                },
-                new InvoiceTransaction
-                {
-                    InvoiceDate = new DateTime(2019, 4, 14),
-                    InvoiceId = "0002",
-                    SupplierId = "Supplier 2",
-                    InvoiceRef = "Ref0002",
-                    Gross = 7300.00m
-                },
-            };
-
-            var candidateData = new Dictionary<string,Candidate>()
-            {
-                {"Supplier 1", new Candidate(){BankDetails = new BankDetails
-                {
-                    AccountName = "Account 1",
-                    AccountNumber = "00000001",
-                    SortCode = "00-00-01"
-                }}},
-
-                {"Supplier 2", new Candidate(){ BankDetails = new BankDetails
-                {
-                    AccountName = "Account 2",
-                    AccountNumber = "00000001",
-                    SortCode = "00-00-02"
-                }}}
-            };
-             
-            var expectedResult = new List<SupplierBacs>()
-            {
-                new SupplierBacs()
-                {
-                    AccountName = "Account 1",
-                    AccountNumber = "00000001",
-                    InvoiceReference = "Ref0001",
-                    PaymentAmount = 10000.00m,
-                    PaymentReference = "SONOVATE26042019",
-                    SortCode = "00-00-01",
-                },
-
-                new SupplierBacs()
-                {
-                    AccountName = "Account 2",
-                    AccountNumber = "00000001",
-                    InvoiceReference = "Ref0002",
-                    PaymentAmount = 7300.00m,
-                    PaymentReference = "SONOVATE14042019",
-                    SortCode = "00-00-02",
-                }
-            };
+            var candidateData = _testDataBuilder.AddMultipleCandidateData();
+            var testInvoiceData = _testDataBuilder.AddMultipleInvoiceTranaction();
+            var expectedResult = _testDataBuilder.AddMultipleSupplierResult();
 
             _mockDateTimeService.Setup(x => x.GetStartDateTime()).Returns(startDate);
-
             _mockDateTimeService.Setup(x => x.GetCurrentDateTime()).Returns(endDateTime);
-
             _mockPaymentService.Setup(x => x.ArePaymentsEnabled()).Returns(true);
-
-             _paymentServiceFactory.GetPaymentTypeService(BacsExportType.Supplier);
-           
+            _paymentServiceFactory.GetPaymentTypeService(BacsExportType.Supplier);
             _mockInvoiceTransactionRepository.Setup(x => x.GetBetweenDates(startDate, endDateTime))
                 .Returns(testInvoiceData);
-
-              _mockCandidateRepository.Setup(x => x.GetCandidateData()).Returns(candidateData);
+            _mockCandidateRepository.Setup(x => x.GetCandidateData()).Returns(candidateData);
              
                 //Act
                 await _bacsExportService.ExportZip(BacsExportType.Supplier);
 
 
             //Verify   
-            _testDataBuilder.VerifyCsvRecords<SupplierBacs>(BacsExportType.Supplier, x =>
+            _testDataBuilder.VerifyCsvRecords<SupplierBacs>(BacsExportType.Supplier, record =>
             {
-                Assert.Equal(expectedResult[0].SortCode, x[0].SortCode);
-                Assert.Equal(expectedResult[0].AccountName,x[0].AccountName);
-                Assert.Equal(expectedResult[0].InvoiceReference,x[0].InvoiceReference);
-                Assert.Equal(expectedResult[0].AccountName,x[0].AccountName);
-                Assert.Equal(expectedResult[1].SortCode, x[1].SortCode);
-                Assert.Equal(expectedResult[1].AccountName,x[1].AccountName);
-                Assert.Equal(expectedResult[1].InvoiceReference,x[1].InvoiceReference);
-                Assert.Equal(expectedResult[1].AccountName,x[1].AccountName);
+                Assert.Equal(expectedResult[0].SortCode, record[0].SortCode);
+                Assert.Equal(expectedResult[0].AccountName,record[0].AccountName);
+                Assert.Equal(expectedResult[0].InvoiceReference,record[0].InvoiceReference);
+                Assert.Equal(expectedResult[0].AccountName,record[0].AccountName);
+                Assert.Equal(expectedResult[1].SortCode, record[1].SortCode);
+                Assert.Equal(expectedResult[1].AccountName,record[1].AccountName);
+                Assert.Equal(expectedResult[1].InvoiceReference,record[1].InvoiceReference);
+                Assert.Equal(expectedResult[1].AccountName,record[1].AccountName);
 
+                record.Should().BeEquivalentTo(expectedResult);
             });
             
-            //_mockWriterWrapper.Verify(x => x.WriteRecords(It.Is<IEnumerable<SupplierBacs>>( y => y.Any() && y.Count() == 2),filename),Times.Once);
-
-            //_mockWriterWrapper.Verify(x => x.WriteRecords(It.Is<IEnumerable<SupplierBacs>>( y => y.ToList()[0].AccountName=="Account 1" && y.ToList()[0].PaymentReference=="SONOVATE26042019"),filename),Times.Once);
-
         }
-
     }
 }
