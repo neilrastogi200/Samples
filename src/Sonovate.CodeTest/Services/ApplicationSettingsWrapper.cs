@@ -2,7 +2,7 @@
 
 namespace Sonovate.CodeTest.Services
 {
-    public class ApplicationWrapper : IApplicationWrapper
+    public class ApplicationSettingsWrapper : IApplicationSettingsWrapper
     {
         private static IDictionary<string, string> Settings { get; set; }
 
@@ -19,10 +19,5 @@ namespace Sonovate.CodeTest.Services
                 Settings[key] = value;
             }
         }
-    }
-
-    public interface IApplicationWrapper
-    {
-        string this[string key] { get; set; }
     }
 }

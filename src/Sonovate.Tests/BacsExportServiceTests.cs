@@ -1,37 +1,25 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using AutoFixture;
-using AutoFixture.AutoMoq;
 using FluentAssertions;
-using FluentAssertions.Collections;
-using Microsoft.Extensions.Configuration;
 using Moq;
-using Raven.Client.Documents;
-using Sonovate.CodeTest;
 using Sonovate.CodeTest.Domain;
 using Sonovate.CodeTest.Factory;
 using Sonovate.CodeTest.Repositories;
 using Sonovate.CodeTest.Services;
-using Sonovate.Tests.TestHelpers;
 using Xunit;
-using IApplicationWrapper = Sonovate.CodeTest.Services.IApplicationWrapper;
 
 namespace Sonovate.Tests
 {
     public class BacsExportServiceTests
     {
-        private  Mock<IPaymentsRepository> _mockPaymentsRepository;
-        private Mock<ICandidateRepository> _mockCandidateRepository;
-        private  Mock<IAgencyRepository> _mockAgencyRepository;
-        private Mock<IInvoiceTransactionRepository> _mockInvoiceTransactionRepository;
-        private Mock<IDateTimeService> _mockDateTimeService;
-        private Mock<IPaymentService> _mockPaymentService;
-        private Mock<ICsvWriterWrapper> _mockWriterWrapper;
-        private Mock<IApplicationWrapper> _mockApplicationWrapper;
+        private readonly Mock<IPaymentsRepository> _mockPaymentsRepository;
+        private readonly Mock<ICandidateRepository> _mockCandidateRepository;
+        private readonly Mock<IAgencyRepository> _mockAgencyRepository;
+        private readonly Mock<IInvoiceTransactionRepository> _mockInvoiceTransactionRepository;
+        private readonly Mock<IDateTimeService> _mockDateTimeService;
+        private readonly Mock<IPaymentService> _mockPaymentService;
+        private readonly Mock<IApplicationSettingsWrapper> _mockApplicationWrapper;
 
         private readonly IPaymentServiceFactory _paymentServiceFactory;
         
@@ -43,24 +31,24 @@ namespace Sonovate.Tests
 
 
         public BacsExportServiceTests()
-        {  
+        {
             _mockPaymentsRepository = new Mock<IPaymentsRepository>();
             _mockAgencyRepository = new Mock<IAgencyRepository>();
             _mockCandidateRepository = new Mock<ICandidateRepository>();
             _mockInvoiceTransactionRepository = new Mock<IInvoiceTransactionRepository>();
             _mockDateTimeService = new Mock<IDateTimeService>();
             _mockPaymentService = new Mock<IPaymentService>();
-            _mockApplicationWrapper = new Mock<IApplicationWrapper>();
+            _mockApplicationWrapper = new Mock<IApplicationSettingsWrapper>();
 
             _testDataBuilder = new TestDataBuilder();
-            _mockWriterWrapper = _testDataBuilder.GetMockedCsvWriterWrapper();
+            var mockWriterWrapper = _testDataBuilder.GetMockedCsvWriterWrapper();
 
             _paymentServiceFactory = new PaymentServiceFactory(_mockPaymentsRepository.Object, _mockInvoiceTransactionRepository.Object, _mockAgencyRepository.Object, _mockCandidateRepository.Object, _mockApplicationWrapper.Object);
 
             _mockDateTimeService.Setup(x => x.GetStartDateTime()).Returns(startDate);
             _mockDateTimeService.Setup(x => x.GetCurrentDateTime()).Returns(endDateTime);
 
-            _bacsExportService = new BacsExportService(_paymentServiceFactory,_mockDateTimeService.Object, _mockWriterWrapper.Object);
+            _bacsExportService = new BacsExportService(_paymentServiceFactory,_mockDateTimeService.Object, mockWriterWrapper.Object);
         }
 
 
@@ -163,7 +151,7 @@ namespace Sonovate.Tests
         {
             //Arrange
             var testInvoiceData = _testDataBuilder.AddSingleInvoiceTransaction();
-            var candidateData = new Dictionary<string,Candidate>()
+            var supplierNotExistCandidateData = new Dictionary<string,Candidate>()
             {
                 {"Supplier 10", new Candidate(){BankDetails = new BankDetails
                 {
@@ -177,7 +165,7 @@ namespace Sonovate.Tests
             _paymentServiceFactory.GetPaymentTypeService(BacsExportType.Supplier);
             _mockInvoiceTransactionRepository.Setup(x => x.GetBetweenDates(startDate, endDateTime))
                 .Returns(testInvoiceData);
-            _mockCandidateRepository.Setup(x => x.GetCandidateData()).Returns(candidateData);
+            _mockCandidateRepository.Setup(x => x.GetCandidateData()).Returns(supplierNotExistCandidateData);
 
             //Assert
             await Assert.ThrowsAsync<InvalidOperationException>(async () =>

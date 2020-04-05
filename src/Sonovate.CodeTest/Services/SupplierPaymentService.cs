@@ -1,11 +1,10 @@
-﻿ using System;
- using System.Collections;
- using System.Collections.Generic;
- using System.Linq;
- using System.Text;
- using System.Threading.Tasks;
- using Sonovate.CodeTest.Domain;
- using Sonovate.CodeTest.Repositories;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Sonovate.CodeTest.Domain;
+using Sonovate.CodeTest.Repositories;
 
 namespace Sonovate.CodeTest.Services
 {

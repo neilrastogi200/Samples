@@ -38,7 +38,16 @@ namespace Sonovate.Tests
         {
             var agencyList = new List<Agency>()
             {
-                new Agency(){Id = "Agency 1",BankDetails = new BankDetails(){AccountNumber = "0123457", AccountName = "testAccount",SortCode = "401314"}}
+                new Agency()
+                {
+                    Id = "Agency 1",
+                    BankDetails = new BankDetails()
+                    {
+                        AccountNumber = "0123457",
+                        AccountName = "testAccount",
+                        SortCode = "401314"
+                    }
+                }
             };
 
             return agencyList;

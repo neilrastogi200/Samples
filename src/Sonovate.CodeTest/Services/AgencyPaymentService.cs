@@ -12,9 +12,9 @@ namespace Sonovate.CodeTest.Services
     {
         private readonly IPaymentsRepository _paymentsRepository;
         private readonly IAgencyRepository _agencyRepository;
-        private readonly IApplicationWrapper _applicationWrapper;
+        private readonly IApplicationSettingsWrapper _applicationWrapper;
 
-        internal AgencyPaymentService(IPaymentsRepository paymentsRepository, IAgencyRepository agencyRepository, IApplicationWrapper applicationWrapper)
+        internal AgencyPaymentService(IPaymentsRepository paymentsRepository, IAgencyRepository agencyRepository, IApplicationSettingsWrapper applicationWrapper)
         {
             _paymentsRepository = paymentsRepository ?? throw new ArgumentNullException(nameof(paymentsRepository));
             _agencyRepository = agencyRepository ?? throw new ArgumentNullException(nameof(agencyRepository));

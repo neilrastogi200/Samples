@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using Sonovate.CodeTest.Domain;
 
 namespace Sonovate.CodeTest.Services
 {

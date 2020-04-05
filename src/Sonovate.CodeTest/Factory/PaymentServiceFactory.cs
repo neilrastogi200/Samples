@@ -11,9 +11,9 @@ namespace Sonovate.CodeTest.Factory
         private readonly IInvoiceTransactionRepository _invoiceTransactionRepository;
         private readonly IAgencyRepository _agencyRepository;
         private readonly ICandidateRepository _candidateRepository;
-        private readonly IApplicationWrapper _applicationWrapper;
+        private readonly IApplicationSettingsWrapper _applicationWrapper;
 
-        internal PaymentServiceFactory(IPaymentsRepository paymentsRepository, IInvoiceTransactionRepository invoiceTransactionRepository, IAgencyRepository agencyRepository, ICandidateRepository candidateRepository, IApplicationWrapper applicationWrapper)
+        internal PaymentServiceFactory(IPaymentsRepository paymentsRepository, IInvoiceTransactionRepository invoiceTransactionRepository, IAgencyRepository agencyRepository, ICandidateRepository candidateRepository, IApplicationSettingsWrapper applicationWrapper)
         {
             _paymentsRepository = paymentsRepository;
             _invoiceTransactionRepository = invoiceTransactionRepository;
@@ -23,7 +23,7 @@ namespace Sonovate.CodeTest.Factory
         }
 
         internal PaymentServiceFactory() : this(new PaymentsRepository(), new InvoiceTransactionRepository(),
-            new AgencyRepository(), new CandidateRepository(), new ApplicationWrapper())
+            new AgencyRepository(), new CandidateRepository(), new ApplicationSettingsWrapper())
         {
 
         }

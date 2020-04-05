@@ -67,7 +67,7 @@ namespace Sonovate.Tests
                 }
             };
             
-        //Act
+           //Act
             var actualResult =_invoiceTransactionRepository.GetBetweenDates(startDate, endDateTime);
 
             //Assert
@@ -83,7 +83,7 @@ namespace Sonovate.Tests
             DateTime startDate = new DateTime(2020, 03, 05);
             DateTime endDateTime = DateTime.Now;
 
-        //Act
+           //Act
             var actualResult =_invoiceTransactionRepository.GetBetweenDates(startDate, endDateTime);
 
             //Assert
