@@ -13,9 +13,6 @@ namespace Sonovate.CodeTest.Services
      
         public BacsExportService() : this (new PaymentServiceFactory(),new DateTimeService(), new CsvWriterWrapper() )
         {
-           //_dateTimeService = new DateTimeService();
-           //_paymentServiceFactory = new PaymentServiceFactory();
-           //_csvWriterWrapper = new CsvWriterWrapper();
         }
 
         public BacsExportService(IPaymentServiceFactory paymentServiceFactory, IDateTimeService dateTimeService, ICsvWriterWrapper csvWriterWrapper)
@@ -40,7 +37,6 @@ namespace Sonovate.CodeTest.Services
 
             if (!service.ArePaymentsEnabled())
             {
-                //return;
                 throw new Exception("Invalid BACS Export Type.");
             }
 
